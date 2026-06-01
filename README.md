@@ -1,8 +1,8 @@
-# Wine Agent — Crecimiento & FLISOL CABA 2026
+# Cooking Agent - Ayudante de cocina con IA local
 
-Companion repo para la charla ["¿Este prompt tiene notas de roble? Creando agentes de IA para catar bebidas"](https://eventol.flisol.org.ar/events/flisol-caba-2026/activity/804/) en el **FLISOL CABA 2026**.
+Repositorio de apoyo para un taller paso a paso sobre construcción de agentes de IA aplicados a recomendaciones de cocina.
 
-Construye un sommelier de vinos que corre **100% en tu laptop** usando [Strands Agents SDK](https://github.com/strands-agents/sdk-python) y Ollama. Cada branch es un paso del tutorial — progresivo, desde cero.
+El proyecto construye un ayudante de cocina que corre en la computadora usando [Strands Agents SDK](https://github.com/strands-agents/sdk-python) y Ollama. Cada branch representa un paso incremental del tutorial.
 
 ---
 
@@ -12,18 +12,18 @@ Cada branch es un paso incremental. Empezá por el 1 y seguí en orden.
 
 | # | Branch | Concepto |
 |---|--------|----------|
-| 1 | [`main`](https://github.com/lecovi/wine-agent/tree/main) | El agente más básico — modelo + loop |
-| 2 | [`feature/01b-primer-agente`](https://github.com/lecovi/wine-agent/tree/feature/01b-primer-agente) | Agente interactivo — aceptá prompts del usuario |
-| 3 | [`feature/02-system-prompt`](https://github.com/lecovi/wine-agent/tree/feature/02-system-prompt) | Personalidad del agente con system prompt |
-| 4 | [`feature/03-herramientas`](https://github.com/lecovi/wine-agent/tree/feature/03-herramientas) | Tu primera herramienta (`@tool`) |
-| 5 | [`feature/03b-herramientas-callback`](https://github.com/lecovi/wine-agent/tree/feature/03b-herramientas-callback) | Visualizá lo que hace el agente (callback) |
-| 6 | [`feature/04-varias-tools`](https://github.com/lecovi/wine-agent/tree/feature/04-varias-tools) | Múltiples herramientas — decisión del modelo |
-| 7 | [`feature/05-memoria`](https://github.com/lecovi/wine-agent/tree/feature/05-memoria) | Sesiones para que recuerde entre ejecuciones |
-| 8 | [`feature/06-loop`](https://github.com/lecovi/wine-agent/tree/feature/06-loop) | Loop interactivo — conversá con el agente |
-| 9 | [`feature/07-mejoras`](https://github.com/lecovi/wine-agent/tree/feature/07-mejoras) | Mejorando el proyecto Python |
-| 10 | [`feature/08-modelos`](https://github.com/lecovi/wine-agent/tree/feature/08-modelos) | Cambiando al modelo de la nube |
+| 1 | `main` | El agente más básico: modelo + prompt |
+| 2 | `feature/01b-primer-agente` | Agente interactivo: aceptá prompts del usuario |
+| 3 | `feature/02-system-prompt` | Rol y alcance del agente con system prompt |
+| 4 | `feature/03-herramientas` | Primera herramienta (`@tool`) para consultar datos |
+| 5 | `feature/03b-herramientas-callback` | Visualizar lo que hace el agente con callback |
+| 6 | `feature/04-varias-tools` | Múltiples herramientas y decisión del modelo |
+| 7 | `feature/05-memoria` | Sesiones para recordar preferencias entre ejecuciones |
+| 8 | `feature/06-loop` | Loop interactivo para conversar con el agente |
+| 9 | `feature/07-mejoras` | Organización del proyecto Python |
+| 10 | `feature/08-modelos` | Cambio a otro modelo o proveedor |
 
-```
+```bash
 git switch feature/01b-primer-agente
 ```
 
@@ -33,14 +33,28 @@ git switch feature/01b-primer-agente
 
 ### Requisitos
 
-- Python 3.10+
-- [uv](https://docs.astral.sh/uv/getting-started/installation/) para manejar deps y entornos virtuales
-- [Ollama](https://ollama.com/download)
+- Python 3.13+
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) para crear el entorno, instalar dependencias y ejecutar el proyecto
+- [Ollama](https://ollama.com/download) para ejecutar el modelo local
+
+### Instalar uv en Windows
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+Después cerrá y abrí la terminal, y verificá:
+
+```powershell
+uv --version
+```
+
+Si aparece un error como `uv: The term 'uv' is not recognized`, copiá el error completo y pegalo en un chatbot para pedir ayuda. Normalmente significa que uv no está instalado o que la terminal todavía no tomó el PATH.
 
 ### Instalación
 
 ```bash
-# Descargar modelo (una sola vez)
+# Descargar modelo local usado en la presentación
 ollama pull llama3.1
 
 # Instalar dependencias con uv
@@ -49,10 +63,12 @@ uv sync
 
 ### Dataset
 
+En los pasos con herramientas, el agente puede consultar una base de recetas.
+
 ```bash
 mkdir -p data
-curl -o data/vinos.json \
-  https://raw.githubusercontent.com/lecovi/wine-agent/refs/heads/feature/03-herramientas/data/vinos.json
+curl -o data/recetas.json \
+  URL_DEL_DATASET/recetas.json
 ```
 
 ### Ejecutar
@@ -65,12 +81,11 @@ uv run main.py
 
 ## ¿Qué aprendés?
 
-```
-[Paso 1-2] Modelo + Prompt → Agente con personalidad
-[Paso 3-4] Agente + @tool → Consulta datos reales, el modelo decide que tool usar
-[Paso 5-6] Session Manager + Loop → Memoria + interfaz interactiva 
-[Paso 7-8] Mejoras + Modelos → Código más limpio y cambio de modelo sin drama
-[Bonus] Explorá el repo que podés ver cómo hacer lo mismo con ADK (Google)
+```text
+[Paso 1-2] Modelo + Prompt -> Agente con rol y alcance
+[Paso 3-4] Agente + @tool -> Consulta datos reales y decide qué herramienta usar
+[Paso 5-6] Session Manager + Loop -> Memoria + interfaz interactiva
+[Paso 7-8] Organización + Modelos -> Código más claro y cambio de proveedor
 ```
 
 ---
@@ -80,15 +95,13 @@ uv run main.py
 - [Strands Agents SDK](https://github.com/strands-agents/sdk-python)
   - [Strands Agents Docs](https://strandsagents.com/)
 - [Ollama](https://ollama.com/download)
-- [Repo original — Nerdear.la Chile 2026](https://github.com/anacunha/strands-agents-wine-agent-sample)
-  - [Video del workshop](https://www.youtube.com/watch?v=jhRdbiwcDGs)
 - [ADK](https://adk.dev/get-started/python/)
 
 ---
 
 ## Agradecimientos
 
-Esta presentación está basada en el workshop ["Construye un Sommelier de IA con Strands Agents y Ollama"](https://github.com/anacunha/strands-agents-wine-agent-sample) presentado en **Nerdear.la Chile 2026** por [anacunha](https://github.com/anacunha) — equipo de AWS.
+Material adaptado para una práctica propia sobre agentes de IA, modelos locales y herramientas.
 
 ---
 

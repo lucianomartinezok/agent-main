@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agente de cocina con IA local</title>
+    <style>
+        :root {
+            --bg: #f7f8fb;
+            --surface: #ffffff;
+            --surface-alt: #edf3f1;
+            --text: #1e252b;
+            --muted: #5f6871;
+            --border: #d8e0e6;
+            --accent: #8b1e3f;
+            --accent-2: #006d77;
+            --accent-soft: #f6dfe7;
+            --code-bg: #17202a;
+            --code-text: #d8f3dc;
+            --shadow: rgba(30, 37, 43, 0.14);
+            --content-max: 1120px;
+            --slide-pad-x: 5.5rem;
+            --slide-pad-y: 4rem;
+            --control-space: 5.75rem;
+            --gap-xs: 0.7rem;
+            --gap-sm: 1rem;
+            --gap-md: 1.35rem;
+            --gap-lg: 1.8rem;
+            --eyebrow-size: 0.85rem;
+            --h1-size: 4.6rem;
+            --h2-size: 3.35rem;
+            --body-size: 1.28rem;
+            --list-size: 1.22rem;
+            --code-size: 1.04rem;
+            --panel-title-size: 1.25rem;
+            --panel-body-size: 1rem;
+            --note-size: 1rem;
+            --media-max: 46dvh;
+            --cover-max: 40dvh;
+            --placeholder-h: 16rem;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            background:
+                linear-gradient(90deg, rgba(139, 30, 63, 0.08) 0, rgba(139, 30, 63, 0.08) 8px, transparent 8px),
+                var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: var(--slide-pad-y) var(--slide-pad-x) calc(var(--slide-pad-y) + var(--control-space));
+            text-align: left;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        .slide-content {
+            width: min(var(--content-max), 100%);
+            max-height: calc(100dvh - (var(--slide-pad-y) * 2) - var(--control-space));
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: var(--gap-md);
+            min-height: 0;
+            transform: scale(var(--fit-scale, 1));
+            transform-origin: center center;
+        }
+
+        .center {
+            align-items: center;
+            text-align: center;
+        }
+
+        .eyebrow {
+            color: var(--accent);
+            font-size: var(--eyebrow-size);
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        h1,
+        h2 {
+            margin: 0;
+            color: var(--text);
+            font-weight: 750;
+            line-height: 1.05;
+            letter-spacing: 0;
+        }
+
+        h1 {
+            font-size: var(--h1-size);
+            max-width: 980px;
+        }
+
+        h2 {
+            font-size: var(--h2-size);
+            max-width: 980px;
+        }
+
+        p {
+            color: var(--muted);
+            font-size: var(--body-size);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        a {
+            color: var(--accent-2);
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 1.2em;
+            color: var(--muted);
+            font-size: var(--list-size);
+            line-height: 1.55;
+        }
+
+        li + li {
+            margin-top: 10px;
+        }
+
+        img,
+        video {
+            display: block;
+            max-width: 100%;
+            max-height: var(--media-max);
+            margin: 0 auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: 0 18px 44px var(--shadow);
+            object-fit: contain;
+        }
+
+        .cover-image {
+            max-height: var(--cover-max);
+            border: 0;
+            box-shadow: none;
+        }
+
+        .emoji-cover {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.7rem 1rem;
+            max-width: 760px;
+            color: var(--accent);
+            font-size: clamp(3.2rem, 7vw, 6.4rem);
+            line-height: 1;
+        }
+
+        .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .ollama-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text);
+            font-size: 1.35rem;
+            font-weight: 800;
+            box-shadow: 0 12px 28px rgba(58, 47, 42, 0.08);
+        }
+
+        .ollama-mark {
+            width: 2.1rem;
+            height: 2.1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            background: var(--text);
+            color: var(--surface);
+            font-size: 1rem;
+            font-weight: 900;
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+            gap: var(--gap-sm);
+            align-items: center;
+            min-height: 0;
+        }
+
+        .media-grid img {
+            max-height: 34dvh;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: var(--gap-sm);
+            margin: 0;
+            min-height: 0;
+        }
+
+        .grid.three {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.35rem;
+            box-shadow: 0 12px 28px rgba(58, 47, 42, 0.08);
+            min-width: 0;
+        }
+
+        .panel h3 {
+            margin: 0;
+            color: var(--text);
+            font-size: var(--panel-title-size);
+        }
+
+        .panel p {
+            margin-top: 0.6rem;
+            font-size: var(--panel-body-size);
+        }
+
+        .code {
+            margin: 0;
+            padding: 1.15rem 1.25rem;
+            background: var(--code-bg);
+            color: var(--code-text);
+            border-radius: 8px;
+            border-left: 5px solid var(--accent-2);
+            font-family: "Cascadia Code", Consolas, monospace;
+            font-size: var(--code-size);
+            line-height: 1.55;
+            text-align: left;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .note {
+            color: var(--muted);
+            font-size: var(--note-size);
+        }
+
+        .placeholder {
+            width: min(820px, 100%);
+            min-height: var(--placeholder-h);
+            margin: 0 auto;
+            border: 1px dashed #9aa5b1;
+            border-radius: 8px;
+            background: var(--surface-alt);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            text-align: center;
+            color: var(--muted);
+            font-size: var(--body-size);
+        }
+
+        .presentation-controls {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.86);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 14px 34px var(--shadow);
+            transform: translateX(-50%);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-button {
+            width: 42px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 1.35rem;
+            line-height: 1;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            border-color: var(--accent);
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.38;
+            cursor: default;
+        }
+
+        .slide-counter {
+            min-width: 76px;
+            color: var(--muted);
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        @media (max-width: 1366px), (max-height: 760px) {
+            :root {
+                --content-max: 980px;
+                --slide-pad-x: 3rem;
+                --slide-pad-y: 2.25rem;
+                --control-space: 4.9rem;
+                --gap-md: 1rem;
+                --gap-lg: 1.25rem;
+                --eyebrow-size: 0.78rem;
+                --h1-size: 3.55rem;
+                --h2-size: 2.65rem;
+                --body-size: 1.05rem;
+                --list-size: 1.02rem;
+                --code-size: 0.9rem;
+                --panel-title-size: 1.08rem;
+                --panel-body-size: 0.9rem;
+                --note-size: 0.88rem;
+                --media-max: 39dvh;
+                --cover-max: 34dvh;
+                --placeholder-h: 12rem;
+            }
+
+            .panel {
+                padding: 1rem;
+            }
+
+            .code {
+                padding: 0.9rem 1rem;
+            }
+        }
+
+        @media (max-width: 760px) {
+            :root {
+                --content-max: 100%;
+                --slide-pad-x: 1.35rem;
+                --slide-pad-y: 1.75rem;
+                --control-space: 4.5rem;
+                --gap-md: 0.85rem;
+                --h1-size: 2.45rem;
+                --h2-size: 2rem;
+                --body-size: 0.98rem;
+                --list-size: 0.96rem;
+                --code-size: 0.78rem;
+                --media-max: 34dvh;
+                --cover-max: 30dvh;
+                --placeholder-h: 10rem;
+            }
+
+            .slide {
+                padding: var(--slide-pad-y) var(--slide-pad-x) calc(var(--slide-pad-y) + var(--control-space));
+            }
+
+            .grid,
+            .grid.three,
+            .media-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .media-grid img {
+                max-height: 24dvh;
+            }
+
+            .presentation-controls {
+                bottom: 14px;
+            }
+        }
+
+        @media (min-width: 1800px) and (min-height: 900px) {
+            :root {
+                --content-max: 1480px;
+                --slide-pad-x: 6.5rem;
+                --slide-pad-y: 4.75rem;
+                --control-space: 6.25rem;
+                --gap-md: 1.6rem;
+                --h1-size: 5.2rem;
+                --h2-size: 3.9rem;
+                --body-size: 1.4rem;
+                --list-size: 1.32rem;
+                --code-size: 1.13rem;
+                --panel-title-size: 1.35rem;
+                --panel-body-size: 1.05rem;
+                --media-max: 50dvh;
+                --cover-max: 44dvh;
+                --placeholder-h: 18rem;
+            }
+        }
+
+        @media (min-width: 2500px) and (min-height: 1300px) {
+            :root {
+                --content-max: 1760px;
+                --slide-pad-x: 8rem;
+                --slide-pad-y: 6rem;
+                --control-space: 7rem;
+                --gap-md: 2rem;
+                --h1-size: 6.4rem;
+                --h2-size: 4.7rem;
+                --body-size: 1.68rem;
+                --list-size: 1.55rem;
+                --code-size: 1.34rem;
+                --panel-title-size: 1.6rem;
+                --panel-body-size: 1.22rem;
+                --note-size: 1.2rem;
+                --media-max: 52dvh;
+                --cover-max: 46dvh;
+                --placeholder-h: 22rem;
+            }
+
+            .nav-button {
+                width: 54px;
+                height: 48px;
+                font-size: 1.65rem;
+            }
+
+            .slide-counter {
+                min-width: 96px;
+                font-size: 1.15rem;
+            }
+        }
+
+        @media (min-width: 3400px) and (min-height: 1800px) {
+            :root {
+                --content-max: 2200px;
+                --slide-pad-x: 10rem;
+                --slide-pad-y: 7rem;
+                --control-space: 8rem;
+                --gap-md: 2.4rem;
+                --h1-size: 7.6rem;
+                --h2-size: 5.7rem;
+                --body-size: 2rem;
+                --list-size: 1.85rem;
+                --code-size: 1.6rem;
+                --panel-title-size: 1.9rem;
+                --panel-body-size: 1.45rem;
+                --note-size: 1.45rem;
+                --media-max: 54dvh;
+                --cover-max: 48dvh;
+                --placeholder-h: 26rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<section class="slide active">
+    <div class="slide-content center">
+        <p class="eyebrow">Workshop paso a paso</p>
+        <h1>Agente de recomendaciones de cocina con IA local</h1>
+        <p>Construcción progresiva de un asistente que sugiere platos según ingredientes, tiempo disponible, preferencias y restricciones alimentarias.</p>
+        <div class="emoji-cover" aria-label="Iconos de cocina">🍳 🥗 🍲 🧑‍🍳 🥘 🥦 🍝 🔪</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Antes de empezar</p>
+        <h2>Requisitos de la práctica</h2>
+        <ul>
+            <li>Python 3.13 o superior para ejecutar el agente y sus herramientas.</li>
+            <li>uv para crear el entorno del proyecto, instalar dependencias y correr scripts.</li>
+            <li>Terminal básica para instalar dependencias, cambiar de rama y correr el proyecto.</li>
+            <li>Git y GitHub para recorrer los pasos incrementales del tutorial.</li>
+            <li>Ollama para ejecutar un modelo local sin depender de una API externa.</li>
+        </ul>
+        <p class="note">La idea no es aprender todo Python desde cero: vamos a usarlo como vehículo para entender agentes, prompts, herramientas y memoria.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Setup</p>
+        <h2>Verificar si Python ya está instalado</h2>
+        <p>Abrí una terminal y ejecutá el comando según tu sistema operativo.</p>
+        <div class="code">Windows / PowerShell
+py --version
+python --version
+
+macOS / Terminal
+python3 --version</div>
+        <p class="note">Si responde con una versión de Python 3.13 o superior, ya está listo. Si el comando no existe o muestra una versión anterior, instalá Python y volvé a abrir la terminal.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Setup</p>
+        <h2>Descargar e instalar Python</h2>
+        <p><a href="https://www.python.org/downloads/" target="_blank" rel="noreferrer">python.org/downloads</a></p>
+        <div class="grid">
+            <article class="panel">
+                <h3>Windows</h3>
+                <p>Descargá el instalador, ejecutalo y elegí la instalación recomendada. Si aparece la opción para agregar Python al PATH, dejala activada.</p>
+            </article>
+            <article class="panel">
+                <h3>macOS</h3>
+                <p>Descargá el instalador .pkg, seguí el asistente y luego verificá desde Terminal con python3.</p>
+            </article>
+        </div>
+        <p class="note">Después de instalar, cerrá y abrí la terminal antes de volver a comprobar la versión.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Setup</p>
+        <h2>Instalar y verificar uv</h2>
+        <p>uv prepara el entorno de Python del proyecto. Lee `pyproject.toml`, instala las dependencias y permite correr `main.py` con un comando.</p>
+        <div class="code"># Instalar uv en Windows PowerShell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Cerrar y abrir la terminal, después verificar
+uv --version</div>
+        <p class="note">Si aparece “uv: The term 'uv' is not recognized”, uv no está instalado o la terminal no tomó el PATH. Copiá el error completo y pegalo en un chatbot para pedir ayuda con el diagnóstico.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Setup</p>
+        <div class="brand-row">
+            <div class="ollama-logo" aria-label="Logo de Ollama"><span class="ollama-mark">O</span><span>Ollama</span></div>
+        </div>
+        <h2>Qué es Ollama</h2>
+        <p>Ollama es una herramienta para ejecutar modelos de IA desde tu computadora. En esta práctica lo usamos como el motor local que responde las consultas del agente construido en Python.</p>
+        <div class="grid three">
+            <article class="panel">
+                <h3>Descarga</h3>
+                <p>Baja modelos y los guarda localmente para poder usarlos sin depender de una API externa.</p>
+            </article>
+            <article class="panel">
+                <h3>Ejecuta</h3>
+                <p>Permite iniciar un chat con un modelo desde CMD, PowerShell o Terminal.</p>
+            </article>
+            <article class="panel">
+                <h3>Conecta</h3>
+                <p>Expone un servidor local para que nuestro script Python pueda enviar prompts y recibir respuestas.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Setup</p>
+        <h2>Opciones iniciales de Ollama</h2>
+        <div class="media-grid">
+            <img src="captures/ollama1.png" alt="Menú de Ollama con la opción Chat with a model seleccionada">
+            <div>
+                <ul>
+                    <li><strong>Chat with a model:</strong> abre un chat interactivo con un modelo. Es la opción que vamos a elegir.</li>
+                    <li><strong>Launch Claude Code:</strong> inicia una herramienta de programación de Anthropic.</li>
+                    <li><strong>Launch Codex App:</strong> abre un agente de trabajo de OpenAI.</li>
+                    <li><strong>Launch Hermes Agent / OpenClaw:</strong> integraciones adicionales que pueden requerir instalación.</li>
+                    <li><strong>More:</strong> muestra más opciones e integraciones.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="code">ollama
+# Elegimos: Chat with a model</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Setup</p>
+        <h2>Elegir el modelo en Ollama</h2>
+        <div class="media-grid">
+            <div>
+                <p>Al elegir <strong>Chat with a model</strong>, Ollama muestra modelos disponibles para ejecutar. Algunos aparecen como modelos online y requieren iniciar sesión.</p>
+                <ul>
+                    <li>Los modelos con <strong>cloud</strong> se usan online y pueden pedir login.</li>
+                    <li>Los que dicen <strong>not downloaded</strong> todavía no están en tu máquina.</li>
+                    <li>Para usarlos localmente hay que descargarlos antes de ejecutar el chat.</li>
+                </ul>
+            </div>
+            <img src="captures/ollama2.png" alt="Selector de modelos de Ollama con modelos cloud y modelos no descargados">
+        </div>
+        <div class="code">ollama pull llama3.1
+ollama run llama3.1</div>
+        <p class="note">Para esta práctica usamos llama3.1 porque es más razonable para equipos personales. Modelos más grandes pueden consumir mucha memoria y colgar la computadora.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Setup</p>
+        <h2>Instalar llama3.1 y ejecutar el agente</h2>
+        <p>Estos comandos preparan el modelo en Ollama y después ejecutan el proyecto Python.</p>
+        <div class="code">ollama pull llama3.1
+ollama list
+
+cd C:\00\agent-main
+uv sync
+uv run main.py</div>
+        <p class="note">Si `ollama`, `uv` o `python` no responden, copiá el error completo y pegalo en un chatbot. Muchas veces alcanza con instalar la herramienta, cerrar la terminal y abrir una nueva.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Concepto base</p>
+        <h2>Modelo vs. agente</h2>
+        <div class="grid">
+            <article class="panel">
+                <h3>Modelo</h3>
+                <p>Genera texto a partir de una consigna. Puede sugerir ideas, pero no sabe consultar nuestro catálogo por sí solo.</p>
+            </article>
+            <article class="panel">
+                <h3>Agente</h3>
+                <p>Usa el modelo para decidir pasos: preguntar faltantes, llamar herramientas, leer resultados y responder con criterio.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Razonamiento operativo</p>
+        <h2>El rol de las herramientas</h2>
+        <p>Un agente de cocina mejora cuando no inventa recetas: consulta datos, filtra opciones y explica por qué una recomendación encaja.</p>
+        <div class="grid three">
+            <article class="panel">
+                <h3>Observar</h3>
+                <p>Lee ingredientes, tiempo, equipamiento, dieta y nivel de dificultad.</p>
+            </article>
+            <article class="panel">
+                <h3>Decidir</h3>
+                <p>Define si necesita buscar recetas, validar restricciones o pedir más datos.</p>
+            </article>
+            <article class="panel">
+                <h3>Actuar</h3>
+                <p>Ejecuta herramientas y compone una recomendación clara, accionable y segura.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Arquitectura</p>
+        <h2>Agent loop</h2>
+        <p>El ciclo del agente se repite hasta que tiene suficiente información para recomendar un plato.</p>
+        <img src="assets/agent-loop.jpg" alt="Diagrama del ciclo de un agente">
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Código</p>
+        <h2>Agent loop en Python</h2>
+        <div class="code">def recomendar_cocina(agente, pregunta):
+    respuesta = agente(pregunta)
+
+    # El SDK se encarga del loop interno:
+    # 1. interpreta la consulta
+    # 2. decide si usa herramientas
+    # 3. incorpora resultados
+    # 4. genera la respuesta final
+    return respuesta</div>
+        <p class="note">La implementación real puede ser corta porque el framework encapsula buena parte del ciclo.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Stack</p>
+        <h2>Tecnologías del taller</h2>
+        <div class="grid three">
+            <article class="panel">
+                <h3>Python</h3>
+                <p>Lenguaje principal para scripts, herramientas y carga de datos.</p>
+            </article>
+            <article class="panel">
+                <h3>Ollama</h3>
+                <p>Servidor local para ejecutar el modelo durante los primeros pasos.</p>
+            </article>
+            <article class="panel">
+                <h3>Strands Agents</h3>
+                <p>SDK para definir agentes, system prompts y herramientas con @tool.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Inicio de práctica</p>
+        <h2>Preparar el proyecto</h2>
+        <p>Repositorio: <a href="https://github.com/lucianomartinezok/agent-main" target="_blank" rel="noreferrer">github.com/lucianomartinezok/agent-main</a></p>
+        <p>Podés ejecutar todos estos pasos en tu computadora local: clonar el repo, instalar dependencias y correr el agente desde la terminal.</p>
+        <div class="code">git clone https://github.com/lucianomartinezok/agent-main.git
+cd agent-main
+uv sync
+uv run main.py</div>
+        <p class="note">uv crea el entorno, instala dependencias y ejecuta el script usando la versión de Python configurada en el proyecto.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Recorrido del tutorial</p>
+        <h2>Cada branch suma complejidad</h2>
+        <p>La idea del taller es avanzar por ramas: cada una parte de la anterior y agrega una capacidad nueva al agente.</p>
+        <div class="code">1  main                          modelo + prompt
+2  feature/01b-primer-agente     entrada interactiva
+3  feature/02-system-prompt      rol y alcance del agente
+4  feature/03-herramientas       primera @tool para consultar datos
+5  feature/03b-herramientas-callback  ver qué hace el agente
+6  feature/04-varias-tools       varias tools y decisión del modelo
+7  feature/05-memoria            sesiones y preferencias
+8  feature/06-loop               conversación continua
+9  feature/07-mejoras            organización del proyecto
+10 feature/08-modelos            cambio de modelo o proveedor</div>
+        <p class="note">Este recorrido está documentado en el README como plan del taller. En esta copia del repo hoy solo se ve `main`; para hacerlo real, las ramas del cuadro tienen que existir en GitHub o crearse y subirse.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 1</p>
+        <h2>Agente base</h2>
+        <p>Primera conexión entre el modelo local y la clase Agent.</p>
+        <div class="code">from strands import Agent
+from strands.models.ollama import OllamaModel
+
+PREGUNTA = "Tengo arroz, huevos y verduras. ¿Qué puedo cocinar?"
+
+modelo = OllamaModel(
+    host="http://localhost:11434",
+    model_id="llama3.1",
+)
+
+agente = Agent(model=modelo)
+agente(PREGUNTA)</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 1</p>
+        <h2>Ejecución del agente base</h2>
+        <img src="captures/ollama3-execute.png" alt="Ejecución de uv run main.py con una respuesta del ayudante de cocina">
+        <p class="note">Primer objetivo: confirmar que `uv run main.py` ejecuta el agente y que Ollama responde con llama3.1.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 1b</p>
+        <h2>Entrada interactiva</h2>
+        <p>El script deja de usar una pregunta fija y empieza a recibir consultas del usuario.</p>
+        <div class="code">def main():
+    modelo = crear_modelo_local()
+    agente = Agent(model=modelo)
+
+    pregunta = input("¿Qué tenés para cocinar? ")
+    agente(pregunta)
+
+if __name__ == "__main__":
+    main()</div>
+        <div class="code">git checkout feature/01b-primer-agente</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 1b</p>
+        <h2>Prueba con preguntas del usuario</h2>
+        <video width="720" controls muted>
+            <source src="assets/cooking-agent-step-01b.mp4" type="video/mp4">
+            Tu navegador no puede reproducir este video.
+        </video>
+        <p class="note">La interacción ya no depende de un prompt hardcodeado.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 1b</p>
+        <h2>Identificar límites del agente</h2>
+        <p>La primera versión puede contestar cualquier tema. Este punto muestra por qué necesitamos alcance y guardrails.</p>
+        <div class="code">pregunta = "¿Podés recomendarme una rutina de inversión?"
+respuesta = agente(pregunta)
+
+# Problema:
+# el agente todavía no sabe que debe limitarse a cocina,
+# ingredientes, recetas y planificación de comidas.</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 2</p>
+        <h2>System prompt</h2>
+        <p>El agente recibe instrucciones de rol, alcance y criterios de respuesta.</p>
+        <div class="code">SYSTEM_PROMPT = """
+Sos un asistente de cocina práctico y cuidadoso.
+
+Objetivo:
+- recomendar platos posibles con los ingredientes disponibles
+- adaptar la respuesta a tiempo, dieta y dificultad
+- explicar pasos concretos sin inventar datos del catálogo
+
+Si la consulta no es de cocina, respondé brevemente
+que solo podés ayudar con comidas, recetas e ingredientes.
+"""</div>
+        <div class="code">git checkout feature/02-system-prompt</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 2</p>
+        <h2>Guardrails en acción</h2>
+        <p>Las instrucciones reducen respuestas fuera de tema y sostienen el objetivo del asistente.</p>
+        <div class="code">consulta = "¿Qué notebook compro?"
+
+respuesta_esperada = """
+Puedo ayudarte con cocina, recetas, ingredientes
+y planificación de comidas. Si querés, contame
+qué tenés en casa y te propongo una opción.
+"""</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 3</p>
+        <h2>Preparar la base de datos</h2>
+        <p>El agente necesita recetas estructuradas para responder con información verificable.</p>
+        <div class="code">mkdir -p data
+curl -o data/recetas.json URL_DEL_DATASET/recetas.json</div>
+        <div class="code">[
+  {
+    "nombre": "arroz salteado con verduras",
+    "ingredientes": ["arroz", "huevo", "zanahoria", "cebolla"],
+    "tiempo_minutos": 25,
+    "dieta": "vegetariana",
+    "dificultad": "baja"
+  }
+]</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 3</p>
+        <h2>Conectar datos con @tool</h2>
+        <p>La herramienta permite que el agente consulte recetas en vez de inventarlas.</p>
+        <div class="code">from strands import tool
+import json
+
+@tool
+def buscar_recetas(ingredientes: list[str], tiempo_max: int = 45):
+    with open("data/recetas.json", encoding="utf-8") as archivo:
+        recetas = json.load(archivo)
+
+    return [
+        receta for receta in recetas
+        if receta["tiempo_minutos"] &lt;= tiempo_max
+        and set(ingredientes).intersection(receta["ingredientes"])
+    ]</div>
+        <div class="code">git checkout feature/03-herramientas</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 3</p>
+        <h2>Consulta a datos reales</h2>
+        <div class="code">pregunta = """
+Tengo arroz, huevo y zanahoria.
+Quiero algo rápido y vegetariano.
+"""
+
+resultado_tool = buscar_recetas(
+    ingredientes=["arroz", "huevo", "zanahoria"],
+    tiempo_max=30,
+)
+
+# El agente usa este resultado como evidencia
+# para recomendar una receta concreta.</div>
+        <p class="note">El modelo redacta la respuesta, pero la selección sale de datos consultables.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 4</p>
+        <h2>Múltiples herramientas</h2>
+        <p>El agente dispone de más de una función y el modelo decide cuál conviene usar.</p>
+        <div class="code">@tool
+def buscar_recetas(ingredientes: list[str], tiempo_max: int):
+    ...
+
+@tool
+def validar_restricciones(receta: dict, restricciones: list[str]):
+    ...
+
+@tool
+def armar_lista_compras(receta: dict, disponibles: list[str]):
+    ...</div>
+        <div class="code">git checkout feature/04-varias-tools</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 4</p>
+        <h2>Selección de herramienta</h2>
+        <div class="code">consulta = """
+Tengo garbanzos y espinaca.
+No consumo lácteos y tengo 30 minutos.
+"""
+
+# Posible ruta del agente:
+# 1. buscar_recetas(["garbanzos", "espinaca"], 30)
+# 2. validar_restricciones(receta, ["sin lacteos"])
+# 3. responder con receta, pasos y ajustes</div>
+        <p class="note">La selección de herramienta depende de la intención de la consulta, no de una regla fija.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 5</p>
+        <h2>Memoria y sesiones</h2>
+        <p>Se agrega persistencia para recordar preferencias entre interacciones.</p>
+        <div class="code">from strands.session.file_session_manager import FileSessionManager
+
+session_manager = FileSessionManager(
+    session_id="cocina-demo",
+    storage_dir="sessions",
+)
+
+agente = Agent(
+    model=modelo,
+    system_prompt=SYSTEM_PROMPT,
+    tools=[buscar_recetas],
+    session_manager=session_manager,
+)</div>
+        <div class="code">git checkout feature/05-memoria</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 5</p>
+        <h2>Persistencia de mensajes</h2>
+        <div class="code">agente("Soy vegetariana y prefiero comidas rápidas.")
+agente("Tengo lentejas y tomate. ¿Qué hago?")
+
+# La segunda respuesta puede usar el dato anterior:
+# vegetariana + comidas rápidas.</div>
+        <p class="note">La memoria evita repetir preferencias en cada mensaje y mejora la continuidad de la conversación.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 6</p>
+        <h2>Loop interactivo</h2>
+        <p>El agente queda disponible para una conversación continua desde la terminal.</p>
+        <div class="code">while True:
+    consulta = input("Cocina &gt; ").strip()
+
+    if consulta.lower() in {"salir", "exit", "q"}:
+        break
+
+    print("Agente: ", end="", flush=True)
+    agente(consulta)
+    print()</div>
+        <div class="code">git checkout feature/06-loop</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 6</p>
+        <h2>Conversación continua</h2>
+        <div class="code">Cocina &gt; Tengo pollo, zapallo y arroz.
+Agente &gt; Podés hacer un arroz cremoso con pollo y zapallo...
+
+Cocina &gt; Que sea sin horno.
+Agente &gt; Perfecto: lo resolvemos en una olla o sartén profunda...
+
+Cocina &gt; Armame la lista de compras para mejorarla.
+Agente &gt; Te conviene sumar cebolla, caldo y perejil...</div>
+        <p class="note">El valor aparece cuando la conversación acumula contexto y el agente adapta la recomendación.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 7</p>
+        <h2>Organizar el proyecto</h2>
+        <ul>
+            <li>Separar herramientas en módulos propios.</li>
+            <li>Mover el system prompt a un archivo Markdown.</li>
+            <li>Guardar recetas y preferencias en estructuras simples.</li>
+        </ul>
+        <div class="code"># cooking_agent/tools.py
+from strands import tool
+
+@tool
+def buscar_recetas(...):
+    ...
+
+@tool
+def armar_lista_compras(...):
+    ...</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 8</p>
+        <h2>Cambiar de modelo</h2>
+        <p>La misma lógica del agente puede ejecutarse con otro proveedor cuando el proyecto lo requiera.</p>
+        <div class="code">from strands import Agent
+
+def crear_agente(modelo):
+    return Agent(
+        model=modelo,
+        system_prompt=SYSTEM_PROMPT,
+        tools=[buscar_recetas, validar_restricciones],
+    )
+
+agente = crear_agente(modelo_en_la_nube)</div>
+        <div class="code">echo 'GOOGLE_API_KEY="YOUR_API_KEY"' &gt; .env</div>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Paso 8</p>
+        <h2>Validación con otro modelo</h2>
+        <div class="code">casos = [
+    "Tengo tofu y arroz. Quiero algo sin gluten.",
+    "Necesito cena para 4 personas en 25 minutos.",
+    "No tengo horno. ¿Qué receta conviene?"
+]
+
+for caso in casos:
+    print("Consulta:", caso)
+    agente(caso)</div>
+        <p class="note">La arquitectura se mantiene: cambia el motor de inferencia, no el diseño del agente.</p>
+    </div>
+</section>
+
+<section class="slide">
+    <div class="slide-content">
+        <p class="eyebrow">Cierre</p>
+        <h2>Recapitulación</h2>
+        <div class="grid">
+            <article class="panel">
+                <h3>Conceptos construidos</h3>
+                <p>Modelo local, agente, herramientas, guardrails, datos, memoria, loop interactivo y cambio de proveedor.</p>
+            </article>
+            <article class="panel">
+                <h3>Resultado</h3>
+                <p>Un agente capaz de recomendar comidas con contexto, restricciones y evidencia consultada.</p>
+            </article>
+        </div>
+        <div class="code">Repositorio del proyecto: URL_DE_TU_REPOSITORIO</div>
+    </div>
+</section>
+
+<nav class="presentation-controls" aria-label="Navegación de diapositivas">
+    <button class="nav-button" id="prevSlide" type="button" aria-label="Diapositiva anterior">←</button>
+    <div id="counter" class="slide-counter">1/1</div>
+    <button class="nav-button" id="nextSlide" type="button" aria-label="Diapositiva siguiente">→</button>
+</nav>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll(".slide");
+    const counter = document.getElementById("counter");
+    const prevButton = document.getElementById("prevSlide");
+    const nextButton = document.getElementById("nextSlide");
+
+    function fitActiveSlide() {
+        const activeSlide = slides[currentSlide];
+        const content = activeSlide.querySelector(".slide-content");
+        if (!content) return;
+
+        content.style.setProperty("--fit-scale", "1");
+
+        const slideStyles = getComputedStyle(activeSlide);
+        const availableWidth = activeSlide.clientWidth - parseFloat(slideStyles.paddingLeft) - parseFloat(slideStyles.paddingRight);
+        const availableHeight = activeSlide.clientHeight - parseFloat(slideStyles.paddingTop) - parseFloat(slideStyles.paddingBottom);
+        const contentRect = content.getBoundingClientRect();
+        const contentWidth = Math.max(content.scrollWidth, contentRect.width);
+        const contentHeight = Math.max(content.scrollHeight, contentRect.height);
+
+        if (availableWidth <= 0 || availableHeight <= 0 || contentWidth <= 0 || contentHeight <= 0) return;
+
+        const scale = Math.min(1, availableWidth / contentWidth, availableHeight / contentHeight);
+        content.style.setProperty("--fit-scale", scale.toFixed(3));
+    }
+
+    function scheduleFit() {
+        requestAnimationFrame(fitActiveSlide);
+    }
+
+    function updateCounter() {
+        counter.innerText = `${currentSlide + 1}/${slides.length}`;
+        prevButton.disabled = currentSlide === 0;
+        nextButton.disabled = currentSlide === slides.length - 1;
+        history.replaceState(null, "", `#${currentSlide}`);
+    }
+
+    function goToSlide(n) {
+        slides[currentSlide].classList.remove("active");
+        currentSlide = Math.max(0, Math.min(n, slides.length - 1));
+        slides[currentSlide].classList.add("active");
+        updateCounter();
+        scheduleFit();
+    }
+
+    window.onload = () => {
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+            const parsed = Number.parseInt(hash, 10);
+            if (!Number.isNaN(parsed)) goToSlide(parsed);
+        } else {
+            updateCounter();
+            scheduleFit();
+        }
+    };
+
+    window.addEventListener("hashchange", () => {
+        const parsed = Number.parseInt(window.location.hash.substring(1), 10);
+        if (!Number.isNaN(parsed)) goToSlide(parsed);
+    });
+
+    document.addEventListener("keydown", (event) => {
+        const key = event.key.toLowerCase();
+        if (event.key === "ArrowRight" || event.key === " " || event.key === "PageDown" || key === "n") {
+            goToSlide(currentSlide + 1);
+        }
+        if (event.key === "ArrowLeft" || event.key === "PageUp" || key === "b") {
+            goToSlide(currentSlide - 1);
+        }
+    });
+
+    prevButton.addEventListener("click", () => {
+        goToSlide(currentSlide - 1);
+    });
+
+    nextButton.addEventListener("click", () => {
+        goToSlide(currentSlide + 1);
+    });
+
+    window.addEventListener("resize", scheduleFit);
+    window.addEventListener("orientationchange", scheduleFit);
+    document.querySelectorAll("img, video").forEach((media) => {
+        media.addEventListener("load", scheduleFit);
+        media.addEventListener("loadedmetadata", scheduleFit);
+    });
+</script>
+
+</body>
+</html>

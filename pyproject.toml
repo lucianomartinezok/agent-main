@@ -1,7 +1,7 @@
 [project]
-name = "wine-agent"
+name = "cooking-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "Ayudante de cocina local construido con Strands Agents y Ollama"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

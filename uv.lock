@@ -1019,18 +1019,16 @@ wheels = [
 ]
 
 [[package]]
-name = "wine-agent"
+name = "cooking-agent"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "python-dotenv" },
-    { name = "strands-agents", extra = ["gemini", "ollama"] },
+    { name = "strands-agents", extra = ["ollama"] },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "python-dotenv", specifier = ">=1.2.2" },
-    { name = "strands-agents", extras = ["gemini", "ollama"], specifier = ">=1.39.0" },
+    { name = "strands-agents", extras = ["ollama"], specifier = ">=1.39.0" },
 ]
 
 [[package]]
