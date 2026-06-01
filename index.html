@@ -221,6 +221,46 @@
             max-height: 34dvh;
         }
 
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .branch-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--panel-body-size);
+            min-width: 760px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .branch-table th,
+        .branch-table td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .branch-table th {
+            background: var(--surface-alt);
+            color: var(--text);
+            font-weight: 800;
+        }
+
+        .branch-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .branch-table code {
+            font-family: "Cascadia Code", Consolas, monospace;
+            font-size: 0.92em;
+            color: var(--text);
+        }
+
         .grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -394,12 +434,17 @@
 
             .grid,
             .grid.three,
-            .media-grid {
+            .media-grid,
+            .branch-table {
                 grid-template-columns: 1fr;
             }
 
             .media-grid img {
                 max-height: 24dvh;
+            }
+
+            .branch-table {
+                min-width: 0;
             }
 
             .presentation-controls {
@@ -741,18 +786,71 @@ uv run main.py</div>
     <div class="slide-content">
         <p class="eyebrow">Recorrido del tutorial</p>
         <h2>Cada branch suma complejidad</h2>
-        <p>La idea del taller es avanzar por ramas: cada una parte de la anterior y agrega una capacidad nueva al agente.</p>
-        <div class="code">1  main                          modelo + prompt
-2  feature/01b-primer-agente     entrada interactiva
-3  feature/02-system-prompt      rol y alcance del agente
-4  feature/03-herramientas       primera @tool para consultar datos
-5  feature/03b-herramientas-callback  ver qué hace el agente
-6  feature/04-varias-tools       varias tools y decisión del modelo
-7  feature/05-memoria            sesiones y preferencias
-8  feature/06-loop               conversación continua
-9  feature/07-mejoras            organización del proyecto
-10 feature/08-modelos            cambio de modelo o proveedor</div>
-        <p class="note">Este recorrido está documentado en el README como plan del taller. En esta copia del repo hoy solo se ve `main`; para hacerlo real, las ramas del cuadro tienen que existir en GitHub o crearse y subirse.</p>
+        <p>La idea del taller es avanzar por ramas: cada una parte de la anterior y agrega una capacidad nueva al agente. Empezá por el 1 y seguí en orden.</p>
+        <div class="table-wrap">
+            <table class="branch-table">
+                <thead>
+                    <tr>
+                        <th>Branch</th>
+                        <th>Concepto</th>
+                        <th>Diapo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>main</code></td>
+                        <td>El agente más básico: modelo + prompt</td>
+                        <td><a href="#16">17</a></td>
+                    </tr>
+                    <tr>
+                        <td><code>feature/01b-primer-agente</code></td>
+                        <td>Agente interactivo: aceptá prompts del usuario</td>
+                        <td><a href="#18">19</a></td>
+                    </tr>
+                    <tr>
+                        <td><code>feature/02-system-prompt</code></td>
+                        <td>Rol y alcance del agente con system prompt</td>
+                        <td><a href="#21">22</a></td>
+                    </tr>
+                    <tr>
+                        <td><code>feature/03-herramientas</code></td>
+                        <td>Primera herramienta (<code>@tool</code>) para consultar datos</td>
+                        <td><a href="#24">25</a></td>
+                    </tr>
+                    <tr>
+                        <td><code>feature/03b-herramientas-callback</code></td>
+                        <td>Visualizar lo que hace el agente con callback</td>
+                        <td><a href="#24">25</a></td>
+                    </tr>
+                    <tr>
+                        <td><code>feature/04-varias-tools</code></td>
+                        <td>Múltiples herramientas y decisión del modelo</td>
+                        <td><a href="#26">27</a></td>
+                    </tr>
+                    <tr>
+                        <td><code>feature/05-memoria</code></td>
+                        <td>Sesiones para recordar preferencias entre ejecuciones</td>
+                        <td><a href="#28">29</a></td>
+                    </tr>
+                    <tr>
+                        <td><code>feature/06-loop</code></td>
+                        <td>Loop interactivo para conversar con el agente</td>
+                        <td><a href="#30">31</a></td>
+                    </tr>
+                    <tr>
+                        <td><code>feature/07-mejoras</code></td>
+                        <td>Organización del proyecto Python</td>
+                        <td><a href="#32">33</a></td>
+                    </tr>
+                    <tr>
+                        <td><code>feature/08-modelos</code></td>
+                        <td>Cambio a otro modelo o proveedor</td>
+                        <td><a href="#33">34</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="note">Este recorrido está documentado en el README como plan del taller. La fila de `03b` queda agrupada con el paso 3 en esta edición de la presentación.</p>
     </div>
 </section>
 
@@ -789,7 +887,7 @@ agente(PREGUNTA)</div>
     <div class="slide-content">
         <p class="eyebrow">Paso 1b</p>
         <h2>Entrada interactiva</h2>
-        <p>El script deja de usar una pregunta fija y empieza a recibir consultas del usuario.</p>
+        <p>El script deja de usar una pregunta fija y empieza a recibir consultas del usuario. Después de cambiar de branch, volvés a correr el programa para ver este cambio en acción.</p>
         <div class="code">def main():
     modelo = crear_modelo_local()
     agente = Agent(model=modelo)
@@ -799,7 +897,8 @@ agente(PREGUNTA)</div>
 
 if __name__ == "__main__":
     main()</div>
-        <div class="code">git checkout feature/01b-primer-agente</div>
+        <div class="code">git checkout feature/01b-primer-agente
+uv run main.py</div>
     </div>
 </section>
 
@@ -807,11 +906,8 @@ if __name__ == "__main__":
     <div class="slide-content">
         <p class="eyebrow">Paso 1b</p>
         <h2>Prueba con preguntas del usuario</h2>
-        <video width="720" controls muted>
-            <source src="assets/cooking-agent-step-01b.mp4" type="video/mp4">
-            Tu navegador no puede reproducir este video.
-        </video>
-        <p class="note">La interacción ya no depende de un prompt hardcodeado.</p>
+        <img src="captures/ollama-prompt.png" alt="Terminal esperando una consulta en el prompt interactivo">
+        <p class="note">Acá escribís la consulta dentro del programa, justo cuando aparece el prompt. Si la tipeás antes, PowerShell la interpreta como comando.</p>
     </div>
 </section>
 
